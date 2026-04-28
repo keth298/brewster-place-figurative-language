@@ -1,0 +1,10 @@
+{
+  "text_file": "path/to/novel.txt",
+  "mrc_file": "path/to/mrc2.dct",
+  "mrc_cache": "mrc_concreteness.pkl",
+  "output_dir": ".",
+  "thresholds": {
+    "abstract_subject_max": 400,
+    "concrete_verb_min": 500
+  }
+}
