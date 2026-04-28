@@ -22,4 +22,7 @@ def load_config(path="config.json"):
     if not os.path.exists(cfg["text_file"]):
         raise FileNotFoundError(f"text_file not found: {cfg['text_file']}")
 
+    if not os.path.exists(cfg["summary_file"]):
+        raise FileNotFoundError(f"summary_file not found: {cfg['summary_file']}")
+
     return cfg

@@ -93,3 +93,20 @@ def test_load_config_thresholds_not_dict(tmp_path):
     cfg_file.write_text(json.dumps(cfg_data))
     with pytest.raises(TypeError, match="thresholds"):
         load_config(str(cfg_file))
+
+
+def test_load_config_summary_file_not_found(tmp_path):
+    novel = tmp_path / "novel.txt"
+    novel.write_text("text")
+    cfg_data = {
+        "text_file": str(novel),
+        "mrc_file": "mrc2.dct",
+        "mrc_cache": "mrc.pkl",
+        "output_dir": ".",
+        "summary_file": "/nonexistent/summary_output.csv",
+        "thresholds": {"abstract_subject_max": 400, "concrete_verb_min": 500},
+    }
+    cfg_file = tmp_path / "config.json"
+    cfg_file.write_text(json.dumps(cfg_data))
+    with pytest.raises(FileNotFoundError, match="summary_file"):
+        load_config(str(cfg_file))
