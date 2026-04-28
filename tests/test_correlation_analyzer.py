@@ -1,8 +1,6 @@
 import pytest
 import pandas as pd
-from correlation_analyzer import run_correlations, print_correlations
-
-TRAITS = ["racial_consciousness", "emotional_register", "domestic_score"]
+from correlation_analyzer import run_correlations, print_correlations, TRAITS
 
 
 def _make_df(racial, emotional, domestic, figurative):
@@ -15,40 +13,36 @@ def _make_df(racial, emotional, domestic, figurative):
     })
 
 
-def test_run_correlations_returns_list_of_three():
+@pytest.fixture
+def basic_results():
     df = _make_df([1, 2, 3, 4], [4, 3, 2, 1], [1, 3, 2, 4], [1, 2, 3, 4])
-    results = run_correlations(df)
-    assert isinstance(results, list)
-    assert len(results) == 3
+    return run_correlations(df)
 
 
-def test_each_dict_has_correct_keys():
-    df = _make_df([1, 2, 3, 4], [4, 3, 2, 1], [1, 3, 2, 4], [1, 2, 3, 4])
-    results = run_correlations(df)
-    for item in results:
+def test_run_correlations_returns_list_of_three(basic_results):
+    assert isinstance(basic_results, list)
+    assert len(basic_results) == 3
+
+
+def test_each_dict_has_correct_keys(basic_results):
+    for item in basic_results:
         assert set(item.keys()) == {"trait", "r", "p_value"}
 
 
-def test_r_values_are_floats_in_range():
-    df = _make_df([1, 2, 3, 4], [4, 3, 2, 1], [1, 3, 2, 4], [1, 2, 3, 4])
-    results = run_correlations(df)
-    for item in results:
+def test_r_values_are_floats_in_range(basic_results):
+    for item in basic_results:
         assert isinstance(item["r"], float)
         assert -1.0 <= item["r"] <= 1.0
 
 
-def test_p_values_are_floats_in_range():
-    df = _make_df([1, 2, 3, 4], [4, 3, 2, 1], [1, 3, 2, 4], [1, 2, 3, 4])
-    results = run_correlations(df)
-    for item in results:
+def test_p_values_are_floats_in_range(basic_results):
+    for item in basic_results:
         assert isinstance(item["p_value"], float)
         assert 0.0 <= item["p_value"] <= 1.0
 
 
-def test_all_three_trait_names_present():
-    df = _make_df([1, 2, 3, 4], [4, 3, 2, 1], [1, 3, 2, 4], [1, 2, 3, 4])
-    results = run_correlations(df)
-    trait_names = {item["trait"] for item in results}
+def test_all_three_trait_names_present(basic_results):
+    trait_names = {item["trait"] for item in basic_results}
     assert trait_names == set(TRAITS)
 
 
@@ -69,11 +63,23 @@ def test_perfect_negative_correlation():
         assert item["r"] == pytest.approx(-1.0, abs=1e-9)
 
 
-def test_print_correlations_output(capsys):
-    df = _make_df([1, 2, 3, 4], [4, 3, 2, 1], [1, 3, 2, 4], [1, 2, 3, 4])
-    results = run_correlations(df)
-    print_correlations(results)
+def test_print_correlations_output(capsys, basic_results):
+    print_correlations(basic_results)
     captured = capsys.readouterr()
     assert "Correlation Results:" in captured.out
     for trait in TRAITS:
         assert trait in captured.out
+    assert "r=" in captured.out
+    assert "p=" in captured.out
+
+
+def test_run_correlations_raises_on_nan():
+    df = _make_df([1, float("nan"), 3, 4], [4, 3, 2, 1], [1, 3, 2, 4], [1, 2, 3, 4])
+    with pytest.raises(ValueError, match="NaN"):
+        run_correlations(df)
+
+
+def test_run_correlations_preserves_trait_order():
+    df = _make_df([1, 2, 3, 4], [4, 3, 2, 1], [1, 3, 2, 4], [1, 2, 3, 4])
+    results = run_correlations(df)
+    assert [item["trait"] for item in results] == list(TRAITS)
