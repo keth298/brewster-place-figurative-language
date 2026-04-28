@@ -11,6 +11,9 @@ def load_config(path="config.json"):
         if key not in cfg:
             raise KeyError(key)
 
+    if not isinstance(cfg["thresholds"], dict):
+        raise TypeError(f"'thresholds' must be a dict, got {type(cfg['thresholds']).__name__}")
+
     required_thresholds = ["abstract_subject_max", "concrete_verb_min"]
     for key in required_thresholds:
         if key not in cfg["thresholds"]:

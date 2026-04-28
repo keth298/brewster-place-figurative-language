@@ -55,3 +55,19 @@ def test_load_config_text_file_not_found(tmp_path):
     cfg_file.write_text(json.dumps(cfg_data))
     with pytest.raises(FileNotFoundError, match="text_file"):
         load_config(str(cfg_file))
+
+
+def test_load_config_thresholds_not_dict(tmp_path):
+    novel = tmp_path / "novel.txt"
+    novel.write_text("text")
+    cfg_data = {
+        "text_file": str(novel),
+        "mrc_file": "mrc2.dct",
+        "mrc_cache": "mrc.pkl",
+        "output_dir": ".",
+        "thresholds": None,
+    }
+    cfg_file = tmp_path / "config.json"
+    cfg_file.write_text(json.dumps(cfg_data))
+    with pytest.raises(TypeError, match="thresholds"):
+        load_config(str(cfg_file))
