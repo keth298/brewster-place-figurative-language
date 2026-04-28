@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Generated outputs
+*.csv
+*.pkl
+
+# Data files
+*.pdf
+*.txt
+*.dct
+
+# Internal tooling
+.claude/
