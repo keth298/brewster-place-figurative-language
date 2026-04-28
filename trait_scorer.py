@@ -14,18 +14,26 @@ DOMESTIC_KEYWORDS = {
     "dinner", "mother", "marriage", "pregnant", "eugene", "basil"
 }
 
+_RACIAL_PATTERN = re.compile(r'\b(?:' + '|'.join(sorted(RACIAL_KEYWORDS)) + r')\b', re.IGNORECASE)
+_DOMESTIC_PATTERN = re.compile(r'\b(?:' + '|'.join(sorted(DOMESTIC_KEYWORDS)) + r')\b', re.IGNORECASE)
+
+_COMPILED = {
+    frozenset(RACIAL_KEYWORDS): _RACIAL_PATTERN,
+    frozenset(DOMESTIC_KEYWORDS): _DOMESTIC_PATTERN,
+}
+
 _sia = SentimentIntensityAnalyzer()
 
 
 def score_keywords(text, keywords):
-    if not text or not text.split():
+    words = text.split()
+    if not words:
         return 0.0
-    pattern = r'\b(?:' + '|'.join(re.escape(w) for w in keywords) + r')\b'
-    matches = re.findall(pattern, text, re.IGNORECASE)
-    count = len(matches)
-    if count == 0:
-        return 0.0
-    return count / len(text.split()) * 1000
+    pattern = _COMPILED.get(frozenset(keywords))
+    if pattern is None:
+        pattern = re.compile(r'\b(?:' + '|'.join(sorted(keywords)) + r')\b', re.IGNORECASE)
+    count = len(pattern.findall(text))
+    return count / len(words) * 1000
 
 
 def score_sentiment(sentences):
