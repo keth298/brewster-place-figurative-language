@@ -6,7 +6,7 @@ def load_config(path="config.json"):
     with open(path) as f:
         cfg = json.load(f)
 
-    required_keys = ["text_file", "mrc_file", "mrc_cache", "output_dir", "thresholds"]
+    required_keys = ["text_file", "mrc_file", "mrc_cache", "output_dir", "summary_file", "thresholds"]
     for key in required_keys:
         if key not in cfg:
             raise KeyError(key)
