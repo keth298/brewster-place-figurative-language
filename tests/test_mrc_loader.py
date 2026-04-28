@@ -1,5 +1,4 @@
 import pickle
-import pytest
 from mrc_loader import load_mrc_cache, get_concreteness
 
 
