@@ -46,6 +46,10 @@ def main():
     results = run_correlations(merged_df)
     print_correlations(results)
 
+    correlations_df = pd.DataFrame(results)
+    correlations_df.to_csv(os.path.join(cfg["output_dir"], "correlations_output.csv"), index=False)
+    print("Wrote correlations → correlations_output.csv")
+
 
 if __name__ == "__main__":
     main()
