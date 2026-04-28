@@ -1,6 +1,6 @@
 {
-  "text_file": "path/to/novel.txt",
-  "mrc_file": "path/to/mrc2.dct",
+  "text_file": "novel.txt",
+  "mrc_file": "mrc2.dct",
   "mrc_cache": "mrc_concreteness.pkl",
   "output_dir": ".",
   "summary_file": "summary_output.csv",

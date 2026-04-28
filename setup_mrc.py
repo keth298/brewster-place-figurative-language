@@ -30,25 +30,56 @@ def parse_mrc(mrc_path):
     return concreteness
 
 
+def parse_brysbaert(path):
+    """Parse Brysbaert et al. (2014) concreteness norms (tab-separated, Conc.M on 1-5 scale).
+
+    Rescales to MRC 100-700 range: score = round(100 + (conc - 1) / 4 * 600).
+    Skips words with unknown concreteness (Percent_known == 0).
+    """
+    concreteness = {}
+    with open(path, "r", encoding="utf-8") as f:
+        header = f.readline().strip().split("\t")
+        word_col = header.index("Word")
+        conc_col = header.index("Conc.M")
+        known_col = header.index("Percent_known")
+        for line in f:
+            parts = line.strip().split("\t")
+            if len(parts) <= max(word_col, conc_col, known_col):
+                continue
+            word = parts[word_col].lower().strip()
+            if not word:
+                continue
+            try:
+                conc = float(parts[conc_col])
+                known = float(parts[known_col])
+            except ValueError:
+                continue
+            if known == 0:
+                continue
+            scaled = round(100 + (conc - 1) / 4 * 600)
+            concreteness[word] = scaled
+    return concreteness
+
+
 def main():
     cfg = load_config()
-    mrc_path = cfg["mrc_file"]
     cache_path = cfg["mrc_cache"]
 
-    if not os.path.exists(mrc_path):
-        print(f"MRC file not found at: {mrc_path}")
-        print()
-        print("Download mrc2.dct from the MRC Psycholinguistic Database:")
-        print("  Search: 'MRC Psycholinguistic Database mrc2.dct download'")
-        print("  UWA page: http://websites.psychology.uwa.edu.au/school/MRCDatabase/")
-        print("  Alternative: search GitHub for 'mrc2.dct' (several NLP repos mirror it)")
-        print()
-        print(f"Then set 'mrc_file' in config.json to the path of the downloaded file.")
-        sys.exit(1)
-
-    print(f"Parsing {mrc_path} ...")
-    concreteness = parse_mrc(mrc_path)
-    print(f"Loaded {len(concreteness):,} words with concreteness ratings.")
+    brysbaert_path = "brysbaert_concreteness.txt"
+    if os.path.exists(brysbaert_path):
+        print(f"Parsing Brysbaert concreteness norms from {brysbaert_path} ...")
+        concreteness = parse_brysbaert(brysbaert_path)
+        print(f"Loaded {len(concreteness):,} words with concreteness ratings.")
+    else:
+        mrc_path = cfg["mrc_file"]
+        if not os.path.exists(mrc_path):
+            print(f"No concreteness data found.")
+            print(f"  Option A: place brysbaert_concreteness.txt in this directory")
+            print(f"  Option B: set 'mrc_file' in config.json to a valid mrc2.dct path")
+            sys.exit(1)
+        print(f"Parsing {mrc_path} ...")
+        concreteness = parse_mrc(mrc_path)
+        print(f"Loaded {len(concreteness):,} words with concreteness ratings.")
 
     with open(cache_path, "wb") as f:
         pickle.dump(concreteness, f)
