@@ -1,0 +1,22 @@
+import json
+import os
+
+
+def load_config(path="config.json"):
+    with open(path) as f:
+        cfg = json.load(f)
+
+    required_keys = ["text_file", "mrc_file", "mrc_cache", "output_dir", "thresholds"]
+    for key in required_keys:
+        if key not in cfg:
+            raise KeyError(key)
+
+    required_thresholds = ["abstract_subject_max", "concrete_verb_min"]
+    for key in required_thresholds:
+        if key not in cfg["thresholds"]:
+            raise KeyError(key)
+
+    if not os.path.exists(cfg["text_file"]):
+        raise FileNotFoundError(f"text_file not found: {cfg['text_file']}")
+
+    return cfg
