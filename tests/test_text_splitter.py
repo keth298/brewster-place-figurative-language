@@ -48,6 +48,13 @@ def test_split_chapters_case_insensitive_header():
     assert chunks["Mattie Michael"].strip() == "She walked home."
 
 
+def test_split_chapters_split_line_header():
+    text = "\nMATTIE \nMICHAEL\nShe walked home.\n"
+    chunks = split_chapters(text)
+    assert "Mattie Michael" in chunks
+    assert chunks["Mattie Michael"].strip() == "She walked home."
+
+
 def test_split_chapters_warns_on_missing_header(capsys):
     text = "\nMattie Michael\nSome text here.\n"
     split_chapters(text)

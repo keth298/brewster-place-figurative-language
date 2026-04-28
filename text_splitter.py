@@ -12,16 +12,35 @@ SKIP_HEADERS = ["The Block"]
 _ALL_HEADERS = CHAPTER_HEADERS + SKIP_HEADERS
 
 
+def _header_patterns(header):
+    """Return compiled regex patterns that match a chapter header (single-line and split-line)."""
+    single = re.compile(
+        r"(?:^|\n)[ \t\x0c\r]*" + re.escape(header) + r"[ \t\x0c\r]*(?:\n|$)",
+        re.IGNORECASE,
+    )
+    patterns = [single]
+    words = header.split()
+    if len(words) > 1:
+        first = re.escape(" ".join(words[:-1]))
+        last = re.escape(words[-1])
+        split = re.compile(
+            r"(?:^|\n)[ \t\x0c\r]*" + first + r"[ \t\x0c\r]*\n[ \t\x0c\r]*" + last + r"[ \t\x0c\r]*(?:\n|$)",
+            re.IGNORECASE,
+        )
+        patterns.append(split)
+    return patterns
+
+
 def split_chapters(text):
     """Split novel text into {character: chapter_text}. Skips 'The Block' sections."""
     found = []
+    seen_positions = set()
     for header in _ALL_HEADERS:
-        pattern = re.compile(
-            r"(?:^|\n)[ \t]*" + re.escape(header) + r"[ \t]*(?:\n|$)",
-            re.IGNORECASE,
-        )
-        for m in pattern.finditer(text):
-            found.append((m.start(), m.end(), header))
+        for pattern in _header_patterns(header):
+            for m in pattern.finditer(text):
+                if m.start() not in seen_positions:
+                    seen_positions.add(m.start())
+                    found.append((m.start(), m.end(), header))
 
     found.sort(key=lambda x: x[0])
 
